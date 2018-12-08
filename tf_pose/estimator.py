@@ -12,12 +12,8 @@ from tf_pose import common
 from tf_pose.common import CocoPart
 from tf_pose.tensblur.smoother import Smoother
 
-try:
-    from tf_pose.pafprocess import pafprocess
-except ModuleNotFoundError as e:
-    print(e)
-    print('you need to build c++ library for pafprocess. See : https://github.com/ildoonet/tf-pose-estimation/tree/master/tf_pose/pafprocess')
-    exit(-1)
+from tf_pose.pafprocess import pafprocess
+
 
 logger = logging.getLogger('TfPoseEstimator')
 logger.setLevel(logging.INFO)
@@ -238,7 +234,10 @@ class Human:
     def __repr__(self):
         return self.__str__()
 
+import numpy as np
+points_frames = []
 
+'''BodyPart:%d-(%.2f, %.2f) score=%.2f' %'''
 class BodyPart:
     """
     part_idx : part index(eg. 0 for nose)
@@ -257,8 +256,8 @@ class BodyPart:
         return CocoPart(self.part_idx)
 
     def __str__(self):
-        return 'BodyPart:%d-(%.2f, %.2f) score=%.2f' % (self.part_idx, self.x, self.y, self.score)
-
+    	return 'BodyPart:%d-(%.2f, %.2f) score=%.2f' % (self.part_idx, self.x, self.y, self.score)
+	
     def __repr__(self):
         return self.__str__()
 
@@ -385,15 +384,22 @@ class TfPoseEstimator:
         centers = {}
         for human in humans:
             # draw point
+            points = []
             for i in range(common.CocoPart.Background.value):
                 if i not in human.body_parts.keys():
                     continue
 
                 body_part = human.body_parts[i]
+                points.append((body_part.x, body_part.y))
                 center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
                 centers[i] = center
                 cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)
-
+			
+			points_frames.append(points)
+			if len(points_frames) >= 48:
+				motion = 
+					
+					
             # draw line
             for pair_order, pair in enumerate(common.CocoPairsRender):
                 if pair[0] not in human.body_parts.keys() or pair[1] not in human.body_parts.keys():
